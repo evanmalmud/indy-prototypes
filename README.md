@@ -179,13 +179,26 @@ src/
     undo.ts           history stack, 200 cap                          [pure]
     loop.ts           turn driver                                     [shell]
     render.ts         canvas, flat art, warm temple palette           [shell]
-  pillar-{a,b,c}/     per-prototype entry points (placeholders for now)
+  pillar-a/           PILLAR A — static tomb, perfect information
+    sim.ts            step(state, intent), pure                      [pure]
+    levels.ts         six ASCII rooms + teaches/requires/aha comments
+    sim.test.ts       replays for all six + the unsolvable-by-pushing proof
+    main.ts           canvas, keys, HUD                              [shell]
+    NOTES.md          the honest memo
+  pillar-{b,c}/       per-prototype entry points (placeholders for now)
 DESIGN-BRIEF.md       theme, core value, the three pillars
 TOOL-MATRIX.md        the full design space; TODO cells are the backlog
 ```
 
 ## Status
 
-Foundation and shared toolset only. **No prototypes are built yet** — the three
-pillar pages are placeholders that mount the shared kernel and report what the
-interaction table contains.
+**Pillar A is built** — six rooms at `/pillar-a/`, with a pure sim
+(`src/pillar-a/sim.ts`), six ASCII levels, and replay tests that win every one
+of them. Its headline result is a machine-checked one: level 4 is *proved*
+unsolvable by pushing, by exhausting the entire 781-state push-only space and
+finding no win, then finding one the moment the whip is allowed. See
+[`src/pillar-a/NOTES.md`](src/pillar-a/NOTES.md) for the honest read, including
+two seeded interactions that turn out to be incompatible with this pillar.
+
+Pillars B and C are still placeholders that mount the shared kernel and report
+what the interaction table contains.
