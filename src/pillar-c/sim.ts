@@ -95,6 +95,7 @@ import {
   vec,
 } from '../kernel/grid.ts';
 import type { Intent } from '../kernel/input.ts';
+import { blocked, fired } from '../kernel/instrument.ts';
 import type { Interaction, ResourceId, ToolId } from '../kernel/tools.ts';
 import { RESOURCES, TOOL_DEFS, TORCH_LIGHT_RADIUS, costOfUse, resolve } from '../kernel/tools.ts';
 
@@ -365,7 +366,7 @@ export function isDark(state: SimState, p: Vec2): boolean {
  */
 export function illuminated(state: SimState, p: Vec2): boolean {
   if (!isDark(state, p)) return true;
-  if (state.torchLit) return true;
+  if (state.torchLit && !blocked('TORCH', 'DARK')) return true;
   return state.entities.some(
     (e) => e.kind === 'BRAZIER' && e.flags?.lit === true && chebyshev(e.at, p) <= TORCH_LIGHT_RADIUS,
   );
@@ -411,6 +412,8 @@ export function step(state: SimState, intent: Intent): SimState {
 function collect(state: SimState): SimState {
   const here = entitiesAt(state.entities, state.player).filter((e) => e.kind === 'TREASURE');
   if (here.length === 0) return state;
+  if (blocked('WALK', 'TREASURE')) return state;
+  fired('WALK', 'TREASURE');
   const ids = here.map((e) => e.id);
   const worth = ids.reduce((n, id) => n + (state.def.treasures[id] ?? 0), 0);
   return {
@@ -447,11 +450,18 @@ function doMove(state: SimState, dir: Dir): SimState {
     return noop(state, 'Pitch dark that way. You would be feeling for the walls.');
   }
 
+  /** Carried fire is what bought this tile, as opposed to a lit brazier. */
+  const noteDark = (): void => {
+    if (isDark(state, target) && state.torchLit) fired('TORCH', 'DARK');
+  };
+
   const boulder = entitiesAt(state.entities, target).find((e) => e.kind === 'BOULDER');
-  if (boulder !== undefined) {
+  if (boulder !== undefined && !blocked('PUSH', 'BOULDER')) {
     const beyond = add(target, DIRS[dir]);
     if (!BOULDER_GOES.has(state.map.at(beyond))) return state;
     if (blockedByEntity(state.entities, beyond)) return state;
+    fired('PUSH', 'BOULDER');
+    noteDark();
     // Pushing is free. It is also the only free way to move weight, which is
     // exactly why every priced route has to beat it on something else.
     return {
@@ -463,6 +473,7 @@ function doMove(state: SimState, dir: Dir): SimState {
   }
 
   if (blockedByEntity(state.entities, target)) return state;
+  noteDark();
   return { ...state, player: target, message: '' };
 }
 
@@ -532,6 +543,8 @@ function doUseTool(state: SimState, tool: ToolId, dir: Dir): SimState {
   if (tool === 'SATCHEL' && state.map.at(ahead) === 'PIT') {
     const c = costOfUse('SATCHEL');
     if (!affords(state, c.resource, c.amount)) return noop(state, EMPTY.sand);
+    if (blocked('SATCHEL', 'PIT')) return noop(state, 'The sand will not settle.');
+    fired('SATCHEL', 'PIT');
     return {
       ...state,
       map: state.map.with(ahead, 'RUBBLE'),
@@ -591,6 +604,8 @@ function swingGap(state: SimState, dir: Dir): SimState {
       return noop(state, 'Nothing on the far side to land on.');
     }
     if (!illuminated(state, p)) return noop(state, 'You are not swinging blind into that.');
+    if (blocked('WHIP', 'GAP')) return noop(state, 'There is nothing to anchor to.');
+    fired('WHIP', 'GAP');
     return {
       ...state,
       player: p,

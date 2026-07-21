@@ -28,6 +28,8 @@ import { renderAscii } from '../kernel/render.ts';
 import type { ToolId } from '../kernel/tools.ts';
 import { coverage, resolve } from '../kernel/tools.ts';
 import { LEVELS } from './levels.ts';
+// The winning replays themselves, so tooling can import them without vitest.
+import { AUTHORED } from './routes.ts';
 import type { LevelDef, SimState } from './sim.ts';
 import { createState, stateKey, step } from './sim.ts';
 
@@ -238,79 +240,32 @@ describe('levels', () => {
 
 describe('replays', () => {
   it('a1 The Antechamber — push the boulder onto the plate, sand the pit', () => {
-    const state = expectWin(LEVELS[0], [
-      ...rep(2, M('E')), // walk up behind the stone
-      ...rep(3, M('E')), // three pushes: the law being installed
-      ...rep(5, M('W')),
-      ...rep(3, M('S')), // down through the opened portcullis
-      T('SATCHEL', 'E'), // the pit becomes floor
-      ...rep(3, M('E')),
-    ]);
+    const state = expectWin(LEVELS[0], AUTHORED.a1);
     expect(state.sand).toBe(0);
   });
 
   it('a2 The Weighing Room — scoop the pile, sand the plate, walk away from it', () => {
-    const state = expectWin(LEVELS[1], [
-      T('SATCHEL', 'E'), // scoop: satchel starts empty
-      ...rep(2, M('E')),
-      T('SATCHEL', 'E'), // substitute weight onto the plate
-      ...rep(5, M('E')),
-      ...rep(2, M('S')),
-    ]);
+    const state = expectWin(LEVELS[1], AUTHORED.a2);
     expect(state.sand).toBe(0);
   });
 
   it('a3 The Cracked Gallery — shoot the landing spot, then swing to it', () => {
-    expectWin(LEVELS[2], [
-      T('REVOLVER', 'E'), // shatter the stone on the far lip
-      T('WHIP', 'E'), // now there is somewhere to land
-      T('REVOLVER', 'E'), // second stone, building the revolver habit
-      ...rep(7, M('E')),
-    ]);
+    expectWin(LEVELS[2], AUTHORED.a3);
   });
 
   it('a4 The Sealed Vault — the pull', () => {
-    const state = expectWin(LEVELS[3], [
-      ...rep(5, M('E')), // east along the top of the chamber
-      M('S'),
-      ...rep(2, M('E')),
-      M('N'), // onto the firing tile at the water's edge
-      T('WHIP', 'E'), // PULL the boulder one tile WEST onto the plate
-      M('S'),
-      ...rep(2, M('W')),
-      M('S'),
-      ...rep(3, M('W')),
-      ...rep(3, M('S')),
-    ]);
+    const state = expectWin(LEVELS[3], AUTHORED.a4);
     expect(state.gatesOpen).toBe(true);
   });
 
   it('a5 The Two Scales — sand the near plate, pull for the far one', () => {
-    const state = expectWin(LEVELS[4], [
-      ...rep(3, M('E')),
-      T('SATCHEL', 'E'), // near plate: the satchel's one load
-      ...rep(3, M('E')),
-      T('WHIP', 'E'), // far plate: weight from across the water
-      ...rep(6, M('W')),
-      ...rep(4, M('S')),
-    ]);
+    const state = expectWin(LEVELS[4], AUTHORED.a5);
     expect(state.sand).toBe(0);
     expect(state.gatesOpen).toBe(true);
   });
 
   it("a6 The Architect's Last Joke — sever, then the pull that undoes the mistake", () => {
-    const state = expectWin(LEVELS[5], [
-      T('SATCHEL', 'E'), // plate one, held by sand
-      ...rep(3, M('E')),
-      T('REVOLVER', 'E'), // sever: the boulder drops and seals the doorway
-      ...rep(3, M('W')),
-      ...rep(2, M('S')),
-      ...rep(8, M('E')), // the long way round to under the blockage
-      T('WHIP', 'N'), // one move: clears the doorway AND arms plate two
-      ...rep(8, M('W')),
-      ...rep(2, M('N')),
-      ...rep(10, M('E')),
-    ]);
+    const state = expectWin(LEVELS[5], AUTHORED.a6);
     expect(state.gatesOpen).toBe(true);
   });
 

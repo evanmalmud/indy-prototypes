@@ -22,6 +22,7 @@
  */
 
 import type { EntityKind } from './grid.ts';
+import { blocked, fired } from './instrument.ts';
 
 // ---------------------------------------------------------------------------
 // Tools
@@ -434,7 +435,16 @@ const TABLE: ReadonlyMap<string, Interaction> = new Map(
  * turn is not consumed".
  */
 export function resolve(tool: ToolId, target: EntityKind): Interaction | null {
-  return TABLE.get(pairKey(tool, target)) ?? null;
+  // The forced-interaction test deletes rows. A deleted row is indistinguishable
+  // from an empty cell of TOOL-MATRIX.md, which is precisely the experiment:
+  // the ray passes through the entity and the turn is not consumed.
+  if (blocked(tool, target)) return null;
+  const found = TABLE.get(pairKey(tool, target)) ?? null;
+  // NOTE: a hit here means the pairing was FOUND, not that its effect landed —
+  // findTarget resolves candidates. The audit only counts a recorded token when
+  // the step actually changed the state, which filters out the near-misses.
+  if (found !== null) fired(tool, target);
+  return found;
 }
 
 /** True if the pairing does anything at all. */

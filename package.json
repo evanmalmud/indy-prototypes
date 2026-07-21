@@ -8,6 +8,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
+    "audit": "node --experimental-strip-types --no-warnings tools/audit.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },

@@ -64,6 +64,7 @@ import {
   vec,
 } from '../kernel/grid.ts';
 import type { Intent } from '../kernel/input.ts';
+import { blocked, fired } from '../kernel/instrument.ts';
 import type { Interaction, ToolId } from '../kernel/tools.ts';
 import { TOOL_DEFS, resolve } from '../kernel/tools.ts';
 
@@ -284,6 +285,8 @@ function doMove(state: SimState, dir: Dir): SimState {
     const beyond = add(target, DIRS[dir]);
     if (!BOULDER_GOES.has(state.map.at(beyond))) return state;
     if (blockedByEntity(state.entities, beyond)) return state;
+    if (blocked('PUSH', 'BOULDER')) return state;
+    fired('PUSH', 'BOULDER');
     return {
       ...state,
       player: target,
@@ -340,6 +343,8 @@ function doUseTool(state: SimState, tool: ToolId, dir: Dir): SimState {
   }
   if (tool === 'SATCHEL' && state.map.at(add(state.player, DIRS[dir])) === 'PIT') {
     if (state.sand <= 0) return noop(state, 'The satchel is empty.');
+    if (blocked('SATCHEL', 'PIT')) return noop(state, 'The sand will not settle.');
+    fired('SATCHEL', 'PIT');
     return {
       ...state,
       map: state.map.with(add(state.player, DIRS[dir]), 'RUBBLE'),
@@ -366,6 +371,8 @@ function swingGap(state: SimState, dir: Dir): SimState {
     if (!state.map.isWalkable(p) || blockedByEntity(state.entities, p)) {
       return noop(state, 'Nothing on the far side to land on.');
     }
+    if (blocked('WHIP', 'GAP')) return noop(state, 'There is nothing to anchor to.');
+    fired('WHIP', 'GAP');
     return { ...state, player: p, message: 'You swing across the chasm.' };
   }
   return noop(state, 'The chasm is too wide to swing.');
