@@ -200,5 +200,19 @@ finding no win, then finding one the moment the whip is allowed. See
 [`src/pillar-a/NOTES.md`](src/pillar-a/NOTES.md) for the honest read, including
 two seeded interactions that turn out to be incompatible with this pillar.
 
-Pillars B and C are still placeholders that mount the shared kernel and report
-what the interaction table contains.
+**Pillar C is built** — six rooms at `/pillar-c/`, with a pure sim
+(`src/pillar-c/sim.ts`) carrying a resource economy, six ASCII levels, and
+replay tests that win every one of them. Its headline result is that every room
+has a *solution space* rather than a solution: each level ships a proven
+zero-treasure escape (no room can be bricked), a proven at-or-above-par run, and
+for five of the six, two different winning routes at measurably different
+scores — c6 spans 73 against 48 on the single question of which pool pays the
+door. Every one of those numbers was found by exhaustively searching the room's
+reachable state space, which caught two rooms that were silently broken. See
+[`src/pillar-c/NOTES.md`](src/pillar-c/NOTES.md) for the honest read, including
+why scarcity is expected to suppress the very experimentation this project is
+trying to measure.
+
+Costs live in the shared table as additive metadata (`costOfUse()` in
+`src/kernel/tools.ts`) rather than in a forked copy, so Pillars A and B are
+untouched by it and their tests still pass unchanged.

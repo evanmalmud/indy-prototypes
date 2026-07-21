@@ -127,6 +127,92 @@ export interface Interaction {
   readonly aha: boolean;
   /** Designer-facing note. Mirrored into TOOL-MATRIX.md. */
   readonly note: string;
+  /**
+   * What one use of this pairing debits, when a prototype is running an
+   * economy. OPTIONAL and unset on every shipped row: the default comes from
+   * `TOOL_USE_COST` below, and exceptions live in `COST_OVERRIDES`. It exists
+   * on the interface so a future row can price itself inline without anyone
+   * forking the table. Pillars A and B never read it.
+   */
+  readonly cost?: ToolCost;
+}
+
+// ---------------------------------------------------------------------------
+// RESOURCE COSTS — additive metadata that sits ALONGSIDE the table
+// ---------------------------------------------------------------------------
+/**
+ * Pillar C ("greed is the real enemy") needs to know what a tool use *costs*.
+ * That is metadata about the shared verbs, so it belongs here rather than in
+ * a forked copy of the table inside one prototype — otherwise the three
+ * pillars would stop agreeing about what a tool is, and the comparison would
+ * be confounded by the verbs again.
+ *
+ * Everything in this section is ADDITIVE. No existing row changed, no existing
+ * export changed its type, and nothing above reads any of it. Pillars A and B
+ * import the same file and behave exactly as they did before — their tests are
+ * the proof.
+ *
+ * What is NOT here: how many points a resource is worth. That is Pillar C's
+ * economy, not a property of the toolset, and it lives in
+ * `src/pillar-c/sim.ts`. This section answers only "which pool does this use
+ * draw down, and by how much".
+ */
+
+export type ResourceId = 'fuel' | 'bullets' | 'sand' | 'whip';
+
+export const RESOURCES: readonly ResourceId[] = ['fuel', 'bullets', 'sand', 'whip'];
+
+export interface ToolCost {
+  readonly resource: ResourceId;
+  /** Units debited. Negative means the use REFUNDS the pool. */
+  readonly amount: number;
+}
+
+/** Each tool draws down exactly one pool — its own. */
+export const TOOL_RESOURCE: Readonly<Record<ToolId, ResourceId>> = Object.freeze({
+  WHIP: 'whip', // durability: the whip frays with use
+  TORCH: 'fuel',
+  REVOLVER: 'bullets',
+  SATCHEL: 'sand',
+});
+
+/** The default price of one successful use, including traversal verbs. */
+export const TOOL_USE_COST: Readonly<Record<ToolId, ToolCost>> = Object.freeze({
+  WHIP: { resource: 'whip', amount: 1 },
+  TORCH: { resource: 'fuel', amount: 1 },
+  REVOLVER: { resource: 'bullets', amount: 1 },
+  SATCHEL: { resource: 'sand', amount: 1 },
+});
+
+/**
+ * The exceptions. Only one pairing in the table moves a pool the other way:
+ * scooping sand back out of a pile. That single negative number is what makes
+ * sand the one *reversible* resource, and therefore the one the player is
+ * willing to experiment with — which matters a great deal to Pillar C.
+ */
+const COST_OVERRIDES: readonly (readonly [ToolId, EntityKind, ToolCost])[] = Object.freeze([
+  ['SATCHEL', 'SAND_PILE', { resource: 'sand', amount: -1 }],
+]);
+
+const OVERRIDE_TABLE: ReadonlyMap<string, ToolCost> = new Map(
+  COST_OVERRIDES.map(([t, k, c]) => [`${t}:${k}`, c]),
+);
+
+/**
+ * What one use of `tool` costs, optionally against a specific target.
+ *
+ * Precedence: the row's own `cost`, then an override, then the tool default.
+ * Called with no target (a traversal verb — whip/GAP, satchel/PIT) it returns
+ * the tool default, which is why traversal is priced without needing rows.
+ */
+export function costOfUse(tool: ToolId, target?: EntityKind): ToolCost {
+  if (target !== undefined) {
+    const row = resolve(tool, target);
+    if (row?.cost !== undefined) return row.cost;
+    const override = OVERRIDE_TABLE.get(`${tool}:${target}`);
+    if (override !== undefined) return override;
+  }
+  return TOOL_USE_COST[tool];
 }
 
 // ---------------------------------------------------------------------------
