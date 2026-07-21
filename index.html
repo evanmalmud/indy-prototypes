@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Indy Prototypes — three pillars, one toolset</title>
+  </head>
+  <body>
+    <main>
+      <h1>INDY PROTOTYPES</h1>
+      <p class="tagline">
+        Three design pillars. One shared toolset. Turn-based, puzzle-first.
+      </p>
+
+      <p>
+        Every prototype below uses the <em>same four tools</em> — whip, torch,
+        revolver, sand satchel — resolved through the same interaction table in
+        <code>src/kernel/tools.ts</code>. That is deliberate: holding the verbs
+        constant is what makes the three-way comparison isolate the pillar
+        instead of confounding it with different mechanics.
+      </p>
+
+      <h2>The three pillars</h2>
+      <ul class="pillars">
+        <li class="pillar">
+          <a href="./pillar-a/">A — “Clever, not strong”</a>
+          <p>
+            Static tomb, perfect information, no pressure. Pure deliberation:
+            the room waits as long as you need.
+          </p>
+        </li>
+        <li class="pillar">
+          <a href="./pillar-b/">B — “The tomb is alive”</a>
+          <p>
+            The room reacts and escalates every turn — collapsing floors,
+            rising water, spreading fire, boulders in motion. Still fully
+            turn-based and deterministic; the board changes under you.
+          </p>
+        </li>
+        <li class="pillar">
+          <a href="./pillar-c/">C — “Greed is the real enemy”</a>
+          <p>
+            Tool uses cost scarce resources — torch fuel, bullets, sand — and
+            treasure sits off the safe path. The puzzle is affording what you
+            want.
+          </p>
+        </li>
+      </ul>
+
+      <h2>The designed “aha” set</h2>
+      <table class="tools">
+        <thead>
+          <tr>
+            <th>Combination</th>
+            <th>What the player discovers</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="aha">WHIP + BOULDER</td>
+            <td>
+              You can <em>pull</em>. Block puzzles assume push-only; inverting
+              that re-opens every earlier room. The flagship.
+            </td>
+          </tr>
+          <tr>
+            <td class="aha">SAND + PRESSURE PLATE</td>
+            <td>Weight substitution — the literal Raiders idol swap.</td>
+          </tr>
+          <tr>
+            <td class="aha">TORCH + OIL TRAIL</td>
+            <td>
+              Fire propagates one tile per turn, so time becomes a puzzle
+              element rather than just a resource.
+            </td>
+          </tr>
+          <tr>
+            <td class="aha">REVOLVER + ROPE</td>
+            <td>Sever at range — you are aiming the falling payload.</td>
+          </tr>
+          <tr>
+            <td class="aha">WHIP + TORCH</td>
+            <td>Fling a lit torch across a gap. Remote ignition.</td>
+          </tr>
+          <tr>
+            <td class="aha">REVOLVER + GAS VENT</td>
+            <td>
+              Spark → explosion. The safe tool is the wrong tool here.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Design docs</h2>
+      <p>
+        <code>DESIGN-BRIEF.md</code> — theme, core value, the three pillars.<br />
+        <code>TOOL-MATRIX.md</code> — the full 4×4 tool-pair grid plus
+        tool-vs-environment. Empty cells are the unexplored design space.
+      </p>
+    </main>
+    <script type="module" src="/src/landing.ts"></script>
+  </body>
+</html>
